@@ -1,8 +1,34 @@
 """Various decoders used to extract content from request."""
+import json
+from aubergine.common import Loggable
 
 
-class ParameterValidationError(ValueError):
-    """An error raised when some parameter value failed to validate."""
-    def __init__(self, validation_errors):
-        super(ParameterValidationError, self).__init__(validation_errors)
-        self.errors = validation_errors
+class DecodingError(Exception):
+    """An error raised when decoding fails."""
+
+    def __init__(self, msg):
+        super(DecodingError, self).__init__(msg)
+        self.msg = msg
+
+
+class JSONDecoder(Loggable):
+    """Decoder for JSON content type.
+
+    This is basically an adapter to Python's json.loads that raises
+    DecodingError on decoding failure.
+    """
+
+    def decode(self, content):
+        """Decode given JSON string.
+
+        :param content: content to be decoded
+        :type content: str or bytes
+        :returns: mapping with data decoded from content
+        :rtype: dict:
+        :raises DecodingError: if content is not a valid JSON.
+        """
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError as err:
+            self.logger.exception('Decoding failed.')
+            raise DecodingError(err.msg)
