@@ -31,6 +31,7 @@ def http_request(mocker, sample_data):
     req.bounded_stream = mocker.Mock()
     req.bounded_stream.read.return_value = sample_data
     req.get_header.side_effect = {'head1': 'somevalue', 'head2': 'someothervalue'}.get
+    req.get_param.side_effect = {'foo': 'bar'}.get
     return req
 
 @pytest.fixture
@@ -38,6 +39,13 @@ def header_extractor_factory(mocker):
     def _create_header_extractor(header_name, required=False):
         return extractors.HeaderExtractor(mocker.Mock(), mocker.Mock(), header_name, required)
     return _create_header_extractor
+
+@pytest.fixture
+def query_extractor_factory(mocker):
+    """Fixture providing factory methods for constructing QueryExtractors with given param_name."""
+    def _create_query_extractor(param_name, required=False):
+        return extractors.QueryExtractor(mocker.Mock(), mocker.Mock(), param_name, required)
+    return _create_query_extractor
 
 @pytest.fixture
 def body_extractor(mocker):
@@ -68,3 +76,10 @@ def test_header_extractor_reads_correct_header(header_extractor_factory, http_re
     content = extractor.read_data(http_request)
     http_request.get_header.assert_called_once_with('head1')
     assert content == http_request.get_header('head1')
+
+def test_query_extractor_reads_correct_param(query_extractor_factory, http_request):
+    """QueryExtractor.read_data should read correct query parameter."""
+    extractor = query_extractor_factory('foo')
+    content = extractor.read_data(http_request)
+    http_request.get_param.assert_called_once_with('foo')
+    assert content == http_request.get_param('foo')
