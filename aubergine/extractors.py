@@ -84,7 +84,7 @@ class HeaderExtractor(Extractor):
         :param req: http request.
         :type req: falcon.Request
         :param _kwargs: not used, provided for compliance with Extractor base class.
-        :returns: content read from the request's body.
+        :returns: content read from the request's header `self.header_name`.
         :rtype: str or bytes"""
         return req.get_header(self.header_name)
 
