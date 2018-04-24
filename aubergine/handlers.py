@@ -1,7 +1,7 @@
 """Request handlers."""
 import json
 import falcon
-from aubergine.decoders import ParameterValidationError
+from aubergine.extractors import ParameterValidationError
 
 
 class RequestHandler(object):
@@ -9,13 +9,13 @@ class RequestHandler(object):
 
     :param operation: a callable implementing the behaviour.
     :type operation: callable
-    :param body_decoder: a decoder for for request body.
-    :param params_decoders: a mapping of parameter names to respective decoders.
+    :param body_extractor: an extractor for request body.
+    :param params_extractors: a collection of parameter extractors.
     """
-    def __init__(self, operation, body_decoder, params_decoders):
+    def __init__(self, operation, body_extractor, params_extractors):
         self.operation = operation
-        self.body_decoder = body_decoder
-        self.params_decoders = params_decoders
+        self.body_extractor = body_extractor
+        self.params_extractors = params_extractors
 
     def handle_request(self, req, resp, **kwargs):
         """Process incoming request.
@@ -29,8 +29,8 @@ class RequestHandler(object):
         """
         op_kws = self.get_parameter_dict(req, **kwargs)
 
-        if self.body_decoder is not None:
-            op_kws['body'] = self.body_decoder.decode(req)
+        if self.body_extractor is not None:
+            op_kws['body'] = self.body_extractor.extractor(req)
 
         resp.body = json.dumps(self.operation(**op_kws))
 
@@ -40,10 +40,10 @@ class RequestHandler(object):
         :param req: request object.
         :type req: :py:class:`falcon.Request`
         :param kwargs: placeholder for possibly present path parameters.
-        :returns: a mapping of parameter names into the decoded values.
+        :returns: a mapping of parameter names into the extracted values.
         :rtype: dict
         """
         try:
-            return {name: dec.decode(req, **kwargs) for name, dec in self.params_decoders.items()}
+            return {ext.param_name: ext.extract(req, **kwargs) for ext in self.params_extractors}
         except ParameterValidationError as exc:
             raise falcon.HTTPBadRequest(*exc.errors)
