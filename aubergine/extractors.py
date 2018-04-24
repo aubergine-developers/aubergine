@@ -107,3 +107,30 @@ class QueryExtractor(Extractor):
          param_name.
         :rtype: str or bytes"""
         return req.get_param(self.param_name)
+
+
+class PathExtractor(Extractor):
+    """Extractor for request's path parameters.
+
+    This extractors differs a lot from other extractors in that it uses provided kwargs
+    rather than request. The kwargs for use with this handler should be the ones
+    passed by falcon to the resource using this extractor.
+
+    Note that another difference is that there are no optional path parameters.
+    """
+
+    def __init__(self, schema, decoder, param_name):
+        super(PathExtractor, self).__init__(schema, decoder)
+        self.param_name = param_name
+
+    def read_data(self, _req, **kwargs):
+        """Read data from variable path component.
+
+        :param _req: http request, provided only for compliance with base class.
+        :type req: falcon.Request
+        :param _kwargs: dictionary of variable path parameters passed by falcon to the
+         Resource, for which self is being used.
+        :returns: value of kewyord argument with the same key as `param_name`.
+        :rtype: str or bytes
+        """
+        return kwargs[self.param_name]

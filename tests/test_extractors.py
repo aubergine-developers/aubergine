@@ -41,6 +41,13 @@ def header_extractor_factory(mocker):
     return _create_header_extractor
 
 @pytest.fixture
+def path_extractor_factory(mocker):
+    """Fixture providing factory methods for constructing PathExtractors with given param_name."""
+    def _create_path_extractor(param_name):
+        return extractors.PathExtractor(mocker.Mock(), mocker.Mock(), param_name)
+    return _create_path_extractor
+
+@pytest.fixture
 def query_extractor_factory(mocker):
     """Fixture providing factory methods for constructing QueryExtractors with given param_name."""
     def _create_query_extractor(param_name, required=False):
@@ -83,3 +90,10 @@ def test_query_extractor_reads_correct_param(query_extractor_factory, http_reque
     content = extractor.read_data(http_request)
     http_request.get_param.assert_called_once_with('foo')
     assert content == http_request.get_param('foo')
+
+@pytest.mark.parametrize('kwkey,kwvalue', [('foo', 'bar'), ('baz', 'xyz')])
+def test_path_extractor(path_extractor_factory, http_request, kwkey, kwvalue):
+    """PathExtractor.read_data should extract correct path parameter given in kwargs."""
+    extractor = path_extractor_factory(kwkey)
+    content = extractor.read_data(http_request, **{kwkey: kwvalue})
+    assert content == kwvalue
