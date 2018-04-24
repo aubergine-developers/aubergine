@@ -73,9 +73,9 @@ class BodyExtractor(Extractor):
 class HeaderExtractor(Extractor):
     """Extractor for request's headers."""
 
-    def __init__(self, schema, decoder, header_name, required):
+    def __init__(self, schema, decoder, param_name, required):
         super(HeaderExtractor, self).__init__(schema, decoder)
-        self.header_name = header_name
+        self.param_name = param_name
         self.required = required
 
     def read_data(self, req, **_kwargs):
@@ -84,9 +84,9 @@ class HeaderExtractor(Extractor):
         :param req: http request.
         :type req: falcon.Request
         :param _kwargs: not used, provided for compliance with Extractor base class.
-        :returns: content read from the request's header `self.header_name`.
+        :returns: content read from the request's header `self.param_name`.
         :rtype: str or bytes"""
-        return req.get_header(self.header_name)
+        return req.get_header(self.param_name)
 
 
 class QueryExtractor(Extractor):
