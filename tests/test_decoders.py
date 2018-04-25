@@ -1,17 +1,16 @@
 """Test cases for content decoders."""
 import json
 import pytest
-from aubergine.common import Loggable
 from aubergine import decoders
 
 
-@pytest.fixture(scope='function')
-def json_loads(mocker):
+@pytest.fixture(name='json_loads')
+def get_json_loads(mocker):
     """Return an object spying on json.loads."""
     return mocker.spy(json, 'loads')
 
-@pytest.fixture
-def json_decoder():
+@pytest.fixture(name='json_decoder')
+def get_json_decoder():
     """Fixture returning JSONDecoder for the purpose of testing."""
     return decoders.JSONDecoder()
 
@@ -29,7 +28,7 @@ def test_json_decoder_decodes_bytes(json_decoder, json_loads):
     assert decoded == {'petId': 100, 'petName': 'Azor'}
     json_loads.assert_called_once_with(bytes_json_data)
 
-def test_json_decoder_raises_decoding_error(json_decoder):
+def test_json_decoder_raises(json_decoder):
     """JSONDecoder.decode should raise DecodingError when JSON decoding failed."""
     invalid_data = '{"b": fail'
     with pytest.raises(decoders.DecodingError):
