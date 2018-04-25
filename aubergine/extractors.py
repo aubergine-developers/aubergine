@@ -1,5 +1,13 @@
 """Extractors for various parts of the request."""
 import abc
+from enum import Enum
+
+class Location(Enum):
+    """Possible location parameters."""
+    QUERY = 'query'
+    HEADER = 'header'
+    PATH = 'path'
+    COOKIE = 'cookie'
 
 
 class ParameterMissingError(ValueError):
