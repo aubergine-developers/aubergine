@@ -90,3 +90,18 @@ def test_path_extractor(path_extractor, http_request, kwvalue):
     kwargs = {path_extractor.param_name: kwvalue, 'other_arg': 'other_value'}
     content = path_extractor.read_data(http_request, **kwargs)
     assert content == kwvalue
+
+def test_path_extractor_raises(path_extractor, http_request):
+    """PathExtractor.read_data should raise ParameterMissingError when parameter is missing."""
+    kwargs = {path_extractor.param_name + 'asdf': 'test'}
+    with pytest.raises(extractors.ParameterMissingError) as excinfo:
+        path_extractor.read_data(http_request, **kwargs)
+
+    assert excinfo.value.location == extractors.Location.PATH
+    assert excinfo.value.name == path_extractor.param_name
+
+    with pytest.raises(extractors.ParameterMissingError) as excinfo:
+        path_extractor.read_data(http_request)
+
+    assert excinfo.value.location == extractors.Location.PATH
+    assert excinfo.value.name == path_extractor.param_name

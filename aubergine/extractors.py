@@ -141,4 +141,6 @@ class PathExtractor(Extractor):
         :returns: value of kewyord argument with the same key as `param_name`.
         :rtype: str or bytes
         """
+        if self.param_name not in kwargs:
+            raise ParameterMissingError(Location.PATH, self.param_name)
         return kwargs[self.param_name]
