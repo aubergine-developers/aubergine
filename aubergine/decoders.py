@@ -11,6 +11,17 @@ class DecodingError(Exception):
         self.msg = msg
 
 
+class PlainDecoder(Loggable):
+    """Dummy decoder needed to be plugged in for simple parameters."""
+
+    def decode(self, content):
+        """Decode given string.
+
+        This in an identity map.
+        """
+        return content
+
+
 class JSONDecoder(Loggable):
     """Decoder for JSON content type.
 
