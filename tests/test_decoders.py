@@ -14,6 +14,11 @@ def get_json_decoder():
     """Fixture returning JSONDecoder for the purpose of testing."""
     return decoders.JSONDecoder()
 
+@pytest.fixture(name='plain_decoder')
+def plain_decoder_factory():
+    """Fixture returning PlainDecoder instance for the purpose of testing."""
+    return decoders.PlainDecoder()
+
 def test_json_decoder_decodes_str(json_decoder, json_loads):
     """JSONDecoder.decode should correctly decode json-encoded strings."""
     str_json_data = json.dumps({'petId': 100, 'petName': 'Azor'})
@@ -33,3 +38,8 @@ def test_json_decoder_raises(json_decoder):
     invalid_data = '{"b": fail'
     with pytest.raises(decoders.DecodingError):
         json_decoder.decode(invalid_data)
+
+@pytest.mark.parametrize('content', ['somecontent', b'somecontent'])
+def test_plain_decoder_decodes(plain_decoder, content):
+    """Test that PlainDecoder.decode works as an identity map."""
+    assert plain_decoder.decode(content) == content
