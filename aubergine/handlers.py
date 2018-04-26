@@ -30,7 +30,7 @@ class RequestHandler(object):
         op_kws = self.get_parameter_dict(req, **kwargs)
 
         if self.body_extractor is not None:
-            op_kws['body'] = self.body_extractor.extractor(req)
+            op_kws['body'] = self.body_extractor.extract(req)
 
         resp.body = json.dumps(self.operation(**op_kws))
 
