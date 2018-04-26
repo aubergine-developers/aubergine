@@ -14,14 +14,10 @@ def extractors_factory(path_extractor, query_extractor, header_extractor):
             'query': query_extractor,
             'header': header_extractor}
 
-def test_extracts_params(operation, body_extractor, param_extractors, http_request, mocker):
+def test_extracts_params(operation, body_extractor, param_extractors, http_request):
     """RequestHandler.get_parameter_dict should use its extractors and return extracted values."""
     handler = RequestHandler(operation, body_extractor, list(param_extractors.values()))
     kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
-
-    mocker.spy(body_extractor, 'extract')
-    for extractor in param_extractors.values():
-        mocker.spy(extractor, 'extract')
 
     params = handler.get_parameter_dict(http_request, **kwargs)
 
@@ -38,3 +34,24 @@ def test_extracts_params(operation, body_extractor, param_extractors, http_reque
         header_extractor.param_name: header_extractor.schema.load.return_value,
         query_extractor.param_name: query_extractor.schema.load.return_value,
         path_extractor.param_name: path_extractor.schema.load.return_value}
+
+def test_calls_operation(operation, body_extractor, param_extractors, http_request, mocker):
+    """Test that the underlying operation is called correctly."""
+    handler = RequestHandler(operation, body_extractor, list(param_extractors.values()))
+    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
+    handler.handle_request(http_request, mocker.Mock(), **kwargs)
+
+    expected_call_args = {extractor.param_name: extractor.schema.load.return_value
+                          for extractor in param_extractors.values()}
+    expected_call_args['body'] = body_extractor.schema.load.return_value
+    operation.assert_called_once_with(**expected_call_args)
+
+def test_calls_operatoin_no_body(operation, param_extractors, http_request, mocker):
+    """Test that the underlying operation is called correctly for endpoint with no body."""
+    handler = RequestHandler(operation, None, list(param_extractors.values()))
+    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
+    handler.handle_request(http_request, mocker.Mock(), **kwargs)
+
+    expected_call_args = {extractor.param_name: extractor.schema.load.return_value
+                          for extractor in param_extractors.values()}
+    operation.assert_called_once_with(**expected_call_args)

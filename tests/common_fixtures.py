@@ -1,9 +1,21 @@
 """Common fixtures for aubergine unit tests."""
 import json
 import pytest
-import marshmallow
-from aubergine import extractors
+from aubergine.extractors import HeaderExtractor, QueryExtractor, PathExtractor, BodyExtractor
 
+
+def extractor_spy(mocker, extractor):
+    """Patch an extractor to be able to spy on its 'extract' method.
+
+    :param mocker: a mocker fixture
+    :type mocker: mocker fixture
+    :param extractor: an extractor to patch
+    :type extractor: :py:class:`aubergine.extractors.Extractor`
+    :returns: patched extractor
+    :rtype: :py:class:`aubergine.extractors.Extractor`
+    """
+    mocker.spy(extractor, 'extract')
+    return extractor
 
 @pytest.fixture(name='sample_data')
 def sample_data_provider():
@@ -21,22 +33,26 @@ def get_http_request(mocker, sample_data):
     req.get_param.side_effect = {'foo': 'bar', 'fizz': 2137}.get
     return req
 
-@pytest.fixture(name='header_extractor', params=['head1', 'head2'])
+@pytest.fixture(name='header_extractor', params=['head1', 'head2'], scope='function')
 def header_extractor_factory(request, mocker):
     """Fixture providing instance of HeaderExtractor with decoder and schema mocked."""
-    return extractors.HeaderExtractor(mocker.Mock(), mocker.Mock(), request.param, required=True)
+    extractor = HeaderExtractor(mocker.Mock(), mocker.Mock(), request.param, required=True)
+    return extractor_spy(mocker, extractor)
 
-@pytest.fixture(name='path_extractor', params=['id', 'user'])
+@pytest.fixture(name='path_extractor', params=['id', 'user'], scope='function')
 def path_extractor_factory(request, mocker):
     """Fixture providing instances of PathExtractor with decoder and schema mocked."""
-    return extractors.PathExtractor(mocker.Mock(), mocker.Mock(), request.param)
+    extractor = PathExtractor(mocker.Mock(), mocker.Mock(), request.param)
+    return extractor_spy(mocker, extractor)
 
 @pytest.fixture(name='query_extractor', params=['foo', 'fizz'])
 def query_extractor_factory(request, mocker):
     """Fixture providing instances of QueryExtractor."""
-    return extractors.QueryExtractor(mocker.Mock(), mocker.Mock(), request.param, required=True)
+    extractor = QueryExtractor(mocker.Mock(), mocker.Mock(), request.param, required=True)
+    return extractor_spy(mocker, extractor)
 
 @pytest.fixture(name='body_extractor')
 def body_extractor_factory(mocker):
     """Fixtrure providing an instance ofBodyExtractor with decoder and schema mocked."""
-    return extractors.BodyExtractor(mocker.Mock(), mocker.Mock())
+    extractor = BodyExtractor(mocker.Mock(), mocker.Mock())
+    return extractor_spy(mocker, extractor)

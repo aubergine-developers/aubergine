@@ -7,8 +7,9 @@ class DummyExtractor(extractors.Extractor):
     """Dummy extractor for the purpose of testing abstract Extractor class."""
 
     @staticmethod
-    def read_data(_req, **kwargs):
+    def read_data(req, **kwargs):
         pass
+
 
 @pytest.fixture(name='dummy_extractor')
 def get_dummy_extractor(mocker):
