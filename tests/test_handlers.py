@@ -1,5 +1,7 @@
 """Test cases for request handlers."""
+import falcon
 import pytest
+from aubergine.extractors import ParameterMissingError, ParameterValidationError
 from aubergine.handlers import RequestHandler
 
 @pytest.fixture(name='operation')
@@ -55,3 +57,20 @@ def test_calls_operatoin_no_body(operation, param_extractors, http_request, mock
     expected_call_args = {extractor.param_name: extractor.schema.load.return_value
                           for extractor in param_extractors.values()}
     operation.assert_called_once_with(**expected_call_args)
+
+@pytest.mark.parametrize('which', ['header', 'query', 'path'])
+def test_raises_bad_request(operation, param_extractors, which, http_request, mocker):
+    """Test that the RequestHandler raises 404 error when param is missing or fails to validate."""
+    extractor = param_extractors[which]
+    extract_mock = mocker.Mock(side_effect=ParameterMissingError(which, extractor.param_name))
+    extractor.extract = extract_mock
+    handler = RequestHandler(operation, None, list(param_extractors.values()))
+    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
+    with pytest.raises(falcon.HTTPBadRequest):
+        handler.handle_request(http_request, mocker.Mock(), **kwargs)
+
+    extract_mock = mocker.Mock(side_effect=ParameterValidationError({}))
+    extractor.extract = extract_mock
+
+    with pytest.raises(falcon.HTTPBadRequest):
+        handler.handle_request(http_request, mocker.Mock(), **kwargs)

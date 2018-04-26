@@ -1,7 +1,7 @@
 """Request handlers."""
 import json
 import falcon
-from aubergine.extractors import ParameterValidationError
+from aubergine.extractors import ParameterValidationError, ParameterMissingError
 
 
 class RequestHandler(object):
@@ -47,3 +47,6 @@ class RequestHandler(object):
             return {ext.param_name: ext.extract(req, **kwargs) for ext in self.params_extractors}
         except ParameterValidationError as exc:
             raise falcon.HTTPBadRequest(*exc.errors)
+        except ParameterMissingError as exc:
+            raise falcon.HTTPBadRequest({'error': 'parameter missing', 'name': exc.name,
+                                         'location': exc.location})
