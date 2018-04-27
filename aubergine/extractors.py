@@ -1,6 +1,9 @@
 """Extractors for various parts of the request."""
 import abc
 from enum import Enum
+from aubergine.common import Loggable
+from aubergine.decoders import PlainDecoder, JSONDecoder
+
 
 class Location(Enum):
     """Possible location parameters."""
@@ -144,3 +147,51 @@ class PathExtractor(Extractor):
         if self.param_name not in kwargs:
             raise ParameterMissingError(Location.PATH, self.param_name)
         return kwargs[self.param_name]
+
+
+class UnsupportedContentTypeError(ValueError):
+    """Exception raised when we encounter content type not corresponding to any known decoder."""
+
+
+class ExtractorBuilder(Loggable):
+    """Class for building Extractors."""
+
+    def __init__(self, schema_builder):
+        self.schema_builder = schema_builder
+
+    CONTENT_DECODER_MAP = {'application/json': JSONDecoder}
+
+    def build_extractor(self, param_spec):
+        """Build extractor for parameter described by given mapping.
+
+        :param param_spec: parameter description in the form of mapping. Should conform to
+         OpenAPI 3 specification but is not validated - this method is happy as long as it
+         encounters any keys it needs.
+        :type param_spec: mapping
+        :returns: Extractor that can be used to extract parameters value from the request.
+        :rtype: `Extractor`
+        """
+        location = param_spec['in']
+
+        kwargs = {'param_name': param_spec['name']}
+
+        if location == 'path':
+            extractor_cls = PathExtractor
+        elif location == 'query':
+            extractor_cls = QueryExtractor
+        elif location == 'header':
+            extractor_cls = HeaderExtractor
+
+        if 'content' in param_spec:
+            content_type = next(iter(param_spec['content'].keys()))
+            if content_type not in self.CONTENT_DECODER_MAP:
+                raise UnsupportedContentTypeError(content_type)
+            schema_spec = param_spec['content'][content_type]
+            kwargs['decoder'] = self.CONTENT_DECODER_MAP[content_type]()
+            kwargs['schema'] = self.schema_builder.build(schema_spec)
+        else:
+            kwargs['decoder'] = PlainDecoder()
+            kwargs['schema'] = self.schema_builder.build(param_spec['schema'])
+        if extractor_cls != PathExtractor:
+            kwargs['required'] = param_spec.get('required', False)
+        return extractor_cls(**kwargs)
