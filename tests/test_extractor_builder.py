@@ -48,12 +48,12 @@ def json_param_spec_factory(request):
 
 def test_uses_plain_decoder(extractor_builder, simple_parameter_spec):
     """ParameterBuilder should use PlainDecoder for parameters defined without content keyword."""
-    extractor = extractor_builder.build_extractor(simple_parameter_spec)
+    extractor = extractor_builder.build_param_extractor(simple_parameter_spec)
     assert isinstance(extractor.decoder, PlainDecoder), 'Should use PlainDecoder but does not.'
 
 def test_uses_json_decoder(extractor_builder, json_parameter_spec):
     """ParameterBuilder should uses JSONDecoder for parameters with media application/json."""
-    extractor = extractor_builder.build_extractor(json_parameter_spec)
+    extractor = extractor_builder.build_param_extractor(json_parameter_spec)
     assert isinstance(extractor.decoder, JSONDecoder), 'Should use JSONDecoder but does not.'
 
 @pytest.mark.parametrize('location', ['path', 'query', 'header'])
@@ -71,11 +71,11 @@ def test_unsupported_content_type(extractor_builder, location):
         }
     }
     with pytest.raises(UnsupportedContentTypeError, match='application/unknown'):
-        extractor_builder.build_extractor(spec)
+        extractor_builder.build_param_extractor(spec)
 
 def test_extractor_types(extractor_builder, simple_parameter_spec):
     """ParamBuilder should base type of constructed extractor on 'in' parameter."""
-    extractor = extractor_builder.build_extractor(simple_parameter_spec)
+    extractor = extractor_builder.build_param_extractor(simple_parameter_spec)
     location = simple_parameter_spec['in']
 
     if location == 'path':

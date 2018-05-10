@@ -161,7 +161,7 @@ class ExtractorBuilder(Loggable):
 
     CONTENT_DECODER_MAP = {'application/json': JSONDecoder}
 
-    def build_extractor(self, param_spec):
+    def build_param_extractor(self, param_spec):
         """Build extractor for parameter described by given mapping.
 
         :param param_spec: parameter description in the form of mapping. Should conform to
