@@ -44,3 +44,14 @@ class Resource(object):
         for method in self.handlers:
             responder = partial(self.dispatch, method.lower())
             setattr(self, 'on_' + method.lower(), responder)
+
+
+class ResourceBuilder:
+    """Class for building Resource objects."""
+
+
+    def __init__(self, extractor_builder):
+        self.extractor_builder = extractor_builder
+
+    def build_handler(self, handler_spec):
+        pass
