@@ -195,3 +195,26 @@ class ExtractorBuilder(Loggable):
         if extractor_cls != PathExtractor:
             kwargs['required'] = param_spec.get('required', False)
         return extractor_cls(**kwargs)
+
+    def build_body_extractor(self, body_spec):
+        """Build extractor for body as described by given mapping.
+
+        :param body_spec: body description in the form of mapping. Should conform to
+         OpenAPI 3 specification but is not validated - this method is happy as long as it
+         encounters any keys it needs.
+        :type param_spec: mapping
+        :returns: BodyExtractor that can be used to extract parameters value from the request.
+        :rtype: `BodyExtractor`
+
+        .. notes:: Currently this supports only a single content type. If multiple content types
+           are given in the mapping the resulting body extractor will be constructed only for
+           one of those.
+        """
+        content_type = next(iter(body_spec['content']))
+
+        if content_type not in self.CONTENT_DECODER_MAP:
+            raise UnsupportedContentTypeError(content_type)
+
+        decoder = self.CONTENT_DECODER_MAP[content_type]()
+        schema = self.schema_builder.build(body_spec['content'][content_type]['schema'])
+        return BodyExtractor(schema=schema, decoder=decoder)
