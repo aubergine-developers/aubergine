@@ -1,4 +1,5 @@
 from collections import Callable
+import logging
 import importlib
 
 class InvalidOperationPathError(ValueError):
@@ -31,11 +32,15 @@ class OperationLoader:
          therefore it is impossible to distinguish between package/module and
          its attribute part.
         """
+        logger = logging.getLogger('OperationLoader')
         dot_idx = path.rfind('.')
         if dot_idx == -1:
+            logger.error('Cannot correctly split path into module/package - attr.')
             raise InvalidOperationPathError(path)
         module = self.import_module(path[:dot_idx])
+        logger.info('Imported module %s', path[:dot_idx])
         operation = getattr(module, path[dot_idx+1:])
         if not isinstance(operation, Callable):
+            logger.error('Object %s is not callable, it cannot serve as an operation.', path)
             raise NotCallableError(path)
         return operation
