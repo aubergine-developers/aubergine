@@ -55,3 +55,6 @@ class ResourceBuilder:
 
     def build_handler(self, handler_spec):
         pass
+
+    def build_resource(self, path_spec):
+        passg
