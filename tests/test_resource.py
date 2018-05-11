@@ -2,7 +2,7 @@
 import pytest
 from aubergine.resource import Resource
 
-HTTP_METHODS = ['POST', 'GET', 'PUT', 'PATCH', 'OPTIONS', 'HEAD', 'DELETE']
+HTTP_METHODS = ('POST', 'GET', 'PUT', 'PATCH', 'OPTIONS', 'HEAD', 'DELETE')
 
 @pytest.mark.parametrize('method', HTTP_METHODS)
 def test_not_defined_methods(method, mocker):
