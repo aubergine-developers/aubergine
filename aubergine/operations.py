@@ -11,6 +11,7 @@ class NotCallableError(ValueError):
 
 class OperationLoader:
     """Class for loading operations given their id."""
+
     def __init__(self, import_module=importlib.import_module):
         self.import_module = import_module
 
