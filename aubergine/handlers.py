@@ -7,12 +7,15 @@ from aubergine.extractors import ParameterValidationError, ParameterMissingError
 class RequestHandler(object):
     """Request handler.
 
+    :param path: a path for which this handler is constructed
+    :type path: str
     :param operation: a callable implementing the behaviour.
     :type operation: callable
     :param body_extractor: an extractor for request body.
     :param params_extractors: a collection of parameter extractors.
     """
-    def __init__(self, operation, body_extractor, params_extractors):
+    def __init__(self, path, operation, body_extractor, params_extractors):
+        self.path = path
         self.operation = operation
         self.body_extractor = body_extractor
         self.params_extractors = params_extractors
