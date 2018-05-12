@@ -1,4 +1,4 @@
-"""Factories for various type of objects."""
+"""Utility functions used in aubergine."""
 
 
 def create_resource(handlers):
