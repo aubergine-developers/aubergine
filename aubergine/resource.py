@@ -18,8 +18,9 @@ class Resource(Loggable):
     """
     def __init__(self, handlers, path):
         self.path = path
+        for method, handler in handlers:
+            setattr(self, 'on_' + method.lower(). partial(self.dispatch, method=method.lower()))
         self.handlers = {method.lower(): handler for method, handler in handlers.items()}
-        self._construct_responders()
 
     def dispatch(self, method, req, resp, **kwargs):
         """Dispatch request to handler responsible for serving it.
@@ -41,10 +42,6 @@ class Resource(Loggable):
         """Logger used by this Resource."""
         return 'Resource: ' + self.path
 
-    def _construct_responders(self):
-        for method in self.handlers:
-            responder = partial(self.dispatch, method.lower())
-            setattr(self, 'on_' + method.lower(), responder)
 
 
 class ResourceBuilder:
