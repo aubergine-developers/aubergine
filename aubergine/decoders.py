@@ -14,7 +14,8 @@ class DecodingError(Exception):
 class PlainDecoder(Loggable):
     """Dummy decoder needed to be plugged in for simple parameters."""
 
-    def decode(self, content):
+    @staticmethod
+    def decode(content):
         """Decode given string.
 
         This in an identity map.
