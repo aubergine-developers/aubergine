@@ -1,9 +1,10 @@
 """Implementation of Resource suitable for use with the Falcon Framework."""
+from aubergine.common import Loggable
 from functools import partial
 import logging
 
 
-class Resource(object):
+class Resource(Loggable):
     """Class for representing a HTTP resource.
 
     The instances of this class implement :py:mod:`falcon` compatible Resource interface
@@ -36,9 +37,9 @@ class Resource(object):
         return self.handlers[method].handle_request(req, resp, **kwargs)
 
     @property
-    def logger(self):
+    def logger_name(self):
         """Logger used by this Resource."""
-        return logging.getLogger('Resource: ' + self.path)
+        return 'Resource: ' + self.path
 
     def _construct_responders(self):
         for method in self.handlers:
