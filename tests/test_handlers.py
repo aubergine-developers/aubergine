@@ -35,10 +35,9 @@ def test_extracts_params(operation, body_extractor, param_extractors, http_reque
     header_extractor = param_extractors['header']
     path_extractor = param_extractors['path']
 
-    assert params == {
-        header_extractor.param_name: header_extractor.schema.load.return_value,
-        query_extractor.param_name: query_extractor.schema.load.return_value,
-        path_extractor.param_name: path_extractor.schema.load.return_value}
+    assert params == {ext.param_name: ext.extract.return_value
+                      for ext in [header_extractor, query_extractor, path_extractor]}
+
 
 def test_calls_operation(operation, body_extractor, param_extractors, http_request, mocker):
     """Test that the underlying operation is called correctly."""
@@ -50,9 +49,9 @@ def test_calls_operation(operation, body_extractor, param_extractors, http_reque
     kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
     handler.handle_request(http_request, mocker.Mock(), **kwargs)
 
-    expected_call_args = {extractor.param_name: extractor.schema.load.return_value
+    expected_call_args = {extractor.param_name: extractor.extract.return_value
                           for extractor in param_extractors.values()}
-    expected_call_args['body'] = body_extractor.schema.load.return_value
+    expected_call_args['body'] = body_extractor.extract.return_value
     operation.assert_called_once_with(**expected_call_args)
 
 def test_calls_operation_no_body(operation, param_extractors, http_request, mocker):
@@ -65,7 +64,7 @@ def test_calls_operation_no_body(operation, param_extractors, http_request, mock
     kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
     handler.handle_request(http_request, mocker.Mock(), **kwargs)
 
-    expected_call_args = {extractor.param_name: extractor.schema.load.return_value
+    expected_call_args = {extractor.param_name: extractor.extract.return_value
                           for extractor in param_extractors.values()}
     operation.assert_called_once_with(**expected_call_args)
 

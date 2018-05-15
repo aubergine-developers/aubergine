@@ -62,7 +62,8 @@ class Extractor(abc.ABC):
         """
         data = self.read_data(req, **kwargs)
         decoded = self.decoder.decode(data)
-        return self.schema.load({'content': decoded})
+        result = self.schema.load({'content': decoded})
+        return result.data['content']
 
 
 class BodyExtractor(Extractor):
