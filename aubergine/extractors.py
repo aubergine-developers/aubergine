@@ -69,7 +69,7 @@ class BodyExtractor(Extractor):
     """Extractor for request's body."""
 
     @staticmethod
-    def read_data(req, **_kwargs):
+    def read_data(req, **kwargs):
         """Read data from HTTP request's body.
 
         :param req: http request.
@@ -89,7 +89,7 @@ class HeaderExtractor(Extractor):
         self.param_name = param_name
         self.required = required
 
-    def read_data(self, req, **_kwargs):
+    def read_data(self, req, **kwargs):
         """Read data from HTTP request's headers.
 
         :param req: http request.
@@ -108,7 +108,7 @@ class QueryExtractor(Extractor):
         self.required = required
         self.param_name = param_name
 
-    def read_data(self, req, **_kwargs):
+    def read_data(self, req, **kwargs):
         """Read data from HTTP request's query parameters.
 
         :param req: http request.
@@ -134,10 +134,10 @@ class PathExtractor(Extractor):
         super(PathExtractor, self).__init__(schema, decoder)
         self.param_name = param_name
 
-    def read_data(self, _req, **kwargs):
+    def read_data(self, req, **kwargs):
         """Read data from variable path component.
 
-        :param _req: http request, provided only for compliance with base class.
+        :param req: http request, provided only for compliance with base class.
         :type req: falcon.Request
         :param _kwargs: dictionary of variable path parameters passed by falcon to the
          Resource, for which self is being used.
