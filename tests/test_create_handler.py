@@ -1,5 +1,8 @@
+import importlib
+from functools import partial
+from nadia.api import SchemaBuilder
+import pytest
 from aubergine.extractors import ExtractorBuilder
-from aubergine.operations import OperationLoader
 from aubergine import utils
 
 
@@ -13,7 +16,7 @@ OP_SPEC = {
 }
 
 BODYLESS_OP_SPEC = {key: value for key, value in OP_SPEC.items() if key != 'requestBody'}
-
+PARAMLESS_OP_SPEC = {key: value for key, value in OP_SPEC.items() if key != 'parameters'}
 @pytest.fixture(name='extractor_factory')
 def _extractor_factory(mocker):
     """Fixture providing ExtractorBuilder mock."""
@@ -49,6 +52,11 @@ def test_creates_param_extractors(create_handler, extractor_factory):
     for param_spec in OP_SPEC['parameters']:
         extractor_factory.build_param_extractor.assert_any_call(param_spec)
     assert len(handler.params_extractors) == len(OP_SPEC['parameters'])
+
+def test_skips_creating_param_extractor(create_handler, extractor_factory):
+    """The create_handler function should not create param extractors when there are no params."""
+    handler = create_handler('order/details', PARAMLESS_OP_SPEC)
+    assert extractor_factory.build_param_extractor.call_count == 0
 
 def test_returns_handler_with_body(create_handler):
     """The create_handler should return corret handler for operation with request body."""
