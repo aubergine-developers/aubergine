@@ -1,7 +1,5 @@
 """Test cases for factories.py  modules."""
 from functools import partial
-import importlib
-from nadia.api import SchemaBuilder
 import pytest
 from aubergine.utils import create_resource
 
