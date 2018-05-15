@@ -32,8 +32,9 @@ def create_handler(path, op_spec, extractor_factory, import_module=importlib.imp
     else:
         body_ex = None
 
-    param_ex = [extractor_factory.build_param_extractor(param)
-                for param in op_spec.get('parameters', tuple())]
+    param_ex = {}
+    for param in op_spec.get('parameters', tuple()):
+        param_ex[param['name']] = extractor_factory.build_param_extractor(param)
 
     op_id = op_spec['operationId']
     dot_idx = op_spec['operationId'].rfind('.')

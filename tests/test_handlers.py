@@ -1,91 +1,102 @@
 """Test cases for request handlers."""
-import falcon
+from falcon import HTTPBadRequest, Request
 import pytest
-from aubergine.extractors import ParameterMissingError, ParameterValidationError
+from aubergine.extractors import Extractor, ExtractionResult, MissingValueError, ValidationError
 from aubergine.handlers import RequestHandler
 
+def fake_extractor(mocker, present, value):
+    ext = mocker.Mock(spec=Extractor)
+    ext.extract.return_value = ExtractionResult(present=present, value=value)
+    return ext
+
+@pytest.fixture(name='http_req')
+def _http_req(mocker):
+    return mocker.Mock(spec=Request)
+
 @pytest.fixture(name='operation')
-def operation_factory(mocker):
+def _operation(mocker):
     """Fixture providing handler operation."""
     return mocker.Mock(return_value='operation body')
 
-@pytest.fixture(name='param_extractors')
-def extractors_factory(path_extractor, query_extractor, header_extractor):
-    """Fixture providing instances of all parameter extractors at once."""
-    return {'path': path_extractor,
-            'query': query_extractor,
-            'header': header_extractor}
-
-def test_extracts_params(operation, body_extractor, param_extractors, http_request):
+def test_extracts_params(mocker, operation, http_req):
     """RequestHandler.get_parameter_dict should use its extractors and return extracted values."""
+    body_extractor = fake_extractor(mocker, True, {'name': 'Lessie'})
+    param_extractors = {
+        'id': fake_extractor(mocker, True, '10'),
+        'limit': fake_extractor(mocker, True, 12)}
+
     handler = RequestHandler(operation=operation,
                              path='pet/detaiis/{petid}',
                              body_extractor=body_extractor,
-                             params_extractors=list(param_extractors.values()))
-    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
+                             params_extractors=param_extractors)
 
-    params = handler.get_parameter_dict(http_request, **kwargs)
+    kwargs = {'id': 'some_value', 'test': 'test123'}
+
+    params = handler.get_parameter_dict(http_req, **kwargs)
 
     for extractor in param_extractors.values():
-        extractor.extract.assert_called_once_with(http_request, **kwargs)
+        extractor.extract.assert_called_once_with(http_req, **kwargs)
 
     body_extractor.extract.assert_not_called()
 
-    query_extractor = param_extractors['query']
-    header_extractor = param_extractors['header']
-    path_extractor = param_extractors['path']
+    assert {'id': '10', 'limit': 12} == params
 
-    assert params == {
-        header_extractor.param_name: header_extractor.schema.load.return_value,
-        query_extractor.param_name: query_extractor.schema.load.return_value,
-        path_extractor.param_name: path_extractor.schema.load.return_value}
-
-def test_calls_operation(operation, body_extractor, param_extractors, http_request, mocker):
+def test_calls_operation(operation, http_req, mocker):
     """Test that the underlying operation is called correctly."""
-    handler = RequestHandler(
-        path='posts/',
-        operation=operation,
-        body_extractor=body_extractor,
-        params_extractors=list(param_extractors.values()))
-    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
-    handler.handle_request(http_request, mocker.Mock(), **kwargs)
+    body_extractor = fake_extractor(mocker, True, {'name': 'Lessie'})
+    param_extractors = {
+        'id': fake_extractor(mocker, True, '10'),
+        'limit': fake_extractor(mocker, True, 12)}
+    handler = RequestHandler(path='posts/',
+                             operation=operation,
+                             body_extractor=body_extractor,
+                             params_extractors=param_extractors)
+    kwargs = {'id': 'some_value', 'test': 'test123'}
+    handler.handle_request(http_req, mocker.Mock(), **kwargs)
 
-    expected_call_args = {extractor.param_name: extractor.schema.load.return_value
-                          for extractor in param_extractors.values()}
-    expected_call_args['body'] = body_extractor.schema.load.return_value
+    expected_call_args = {name: ext.extract.return_value.value
+                          for name, ext in param_extractors.items()}
+    expected_call_args['body'] = body_extractor.extract.return_value.value
     operation.assert_called_once_with(**expected_call_args)
 
-def test_calls_operation_no_body(operation, param_extractors, http_request, mocker):
+def test_calls_operation_no_body(operation, http_req, mocker):
     """Test that the underlying operation is called correctly for endpoint with no body."""
+    body_extractor = fake_extractor(mocker, False, None)
+    param_extractors = {
+        'id': fake_extractor(mocker, True, '10'),
+        'limit': fake_extractor(mocker, True, 12)}
     handler = RequestHandler(
         path='path/to/resource',
         operation=operation,
         body_extractor=None,
-        params_extractors=list(param_extractors.values()))
-    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
-    handler.handle_request(http_request, mocker.Mock(), **kwargs)
+        params_extractors=param_extractors)
+    kwargs = {'id': 'some_value', 'test': 'test123'}
+    handler.handle_request(http_req, mocker.Mock(), **kwargs)
 
-    expected_call_args = {extractor.param_name: extractor.schema.load.return_value
-                          for extractor in param_extractors.values()}
+    expected_call_args = {name: ext.extract.return_value.value
+                          for name, ext in param_extractors.items()}
     operation.assert_called_once_with(**expected_call_args)
 
 @pytest.mark.parametrize('which', ['header', 'query', 'path'])
-def test_raises_bad_request(operation, param_extractors, which, http_request, mocker):
+def test_raises_bad_request(operation, which, http_req, mocker):
     """Test that the RequestHandler raises 404 error when param is missing or fails to validate."""
-    extractor = param_extractors[which]
-    extract_mock = mocker.Mock(side_effect=ParameterMissingError(which, extractor.param_name))
-    extractor.extract = extract_mock
+    body_extractor = fake_extractor(mocker, False, None)
+    param_extractors = {
+        'id': fake_extractor(mocker, True, '10'),
+        'limit': fake_extractor(mocker, True, 12)}
+    bad_extractor = mocker.Mock(spec=Extractor)
+    bad_extractor.extract.side_effect = MissingValueError('header', 'page')
+    param_extractors['page'] = bad_extractor
     handler = RequestHandler(
         path='some/path/to/handle',
         operation=operation,
         body_extractor=None,
-        params_extractors=list(param_extractors.values()))
-    kwargs = {param_extractors['path'].param_name: 'some_value', 'test': 'test123'}
-    with pytest.raises(falcon.HTTPBadRequest):
-        handler.handle_request(http_request, mocker.Mock(), **kwargs)
+        params_extractors=param_extractors)
+    kwargs = {'id': 'some_value', 'test': 'test123'}
+    with pytest.raises(HTTPBadRequest):
+        handler.handle_request(http_req, mocker.Mock(), **kwargs)
 
-    extract_mock = mocker.Mock(side_effect=ParameterValidationError({}))
-    extractor.extract = extract_mock
+    param_extractors['page'].extract = mocker.Mock(side_effect=ValidationError({}))
 
-    with pytest.raises(falcon.HTTPBadRequest):
-        handler.handle_request(http_request, mocker.Mock(), **kwargs)
+    with pytest.raises(HTTPBadRequest):
+        handler.handle_request(http_req, mocker.Mock(), **kwargs)
