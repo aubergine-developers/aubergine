@@ -4,7 +4,7 @@ import falcon
 from aubergine.extractors import ValidationError, MissingValueError
 
 
-class RequestHandler(object):
+class RequestHandler:
     """Request handler.
 
     :param path: a path for which this handler is constructed
