@@ -62,27 +62,16 @@ def test_uses_json_decoder(schema_builder, json_spec):
     extractor = builder.build_body_extractor({'content': json_spec['content']})
     assert isinstance(extractor.decoder, JSONDecoder)
 
-@pytest.mark.parametrize('location', ['path', 'query', 'header'])
-def test_unsupported_content_type(schema_builder, location):
+def test_unsupported_content_type(schema_builder):
     """ParamBuilder should raise UnsupportedContentTypeError if content type is unknown."""
     builder = ExtractorBuilder(schema_builder)
-    spec = {
-        'name': 'some_param',
-        'in': location,
-        'content': {
-            'application/unknown': {
-                'schema': {
-                    'type': 'string'
-                }
-            }
-        }
-    }
-    with pytest.raises(UnsupportedContentTypeError, match='application/unknown'):
-        builder.build_param_extractor(spec)
-    del spec['name']
-    del spec['in']
+    spec = {'content': {'application/unknown': {'schema': {'type': 'number'}}}}
     with pytest.raises(UnsupportedContentTypeError, match='application/unknown'):
         builder.build_body_extractor(spec)
+    spec['in'] = 'path'
+    spec['name'] = 'id'
+    with pytest.raises(UnsupportedContentTypeError, match='application/unknown'):
+        builder.build_param_extractor(spec)
 
 def test_extractor_types(schema_builder, simple_spec):
     """ParamBuilder should base type of constructed extractor on 'in' parameter."""
