@@ -36,10 +36,10 @@ def _import_module(mocker):
 def _api_factory(mocker):
     return mocker.Mock(spec_set=falcon.API)
 
-def test_from_file(spec_dict, ymlref_mock, mock_open):
+def test_from_file(spec_dict, mock_open):
     app = Aubergine.from_file('myspec_v1.yml')
     mock_open.assert_called_once_with('myspec_v1.yml')
-    app.spec_dict == spec_dict
+    assert app.spec_dict == spec_dict
 
 def test_creates_handlers(spec_dict, extractor_factory, import_module, utils):
     app = Aubergine(spec_dict)

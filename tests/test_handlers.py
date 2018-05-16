@@ -61,7 +61,6 @@ def test_calls_operation(operation, http_req, mocker):
 
 def test_calls_operation_no_body(operation, http_req, mocker):
     """Test that the underlying operation is called correctly for endpoint with no body."""
-    body_extractor = fake_extractor(mocker, False, None)
     param_extractors = {
         'id': fake_extractor(mocker, True, '10'),
         'limit': fake_extractor(mocker, True, 12)}
@@ -77,8 +76,7 @@ def test_calls_operation_no_body(operation, http_req, mocker):
                           for name, ext in param_extractors.items()}
     operation.assert_called_once_with(**expected_call_args)
 
-@pytest.mark.parametrize('which', ['header', 'query', 'path'])
-def test_raises_bad_request(operation, which, http_req, mocker):
+def test_raises_bad_request(operation, http_req, mocker):
     """Test that the RequestHandler raises 404 error when param is missing or fails to validate."""
     body_extractor = fake_extractor(mocker, False, None)
     param_extractors = {
@@ -90,7 +88,7 @@ def test_raises_bad_request(operation, which, http_req, mocker):
     handler = RequestHandler(
         path='some/path/to/handle',
         operation=operation,
-        body_extractor=None,
+        body_extractor=body_extractor,
         params_extractors=param_extractors)
     kwargs = {'id': 'some_value', 'test': 'test123'}
     with pytest.raises(HTTPBadRequest):

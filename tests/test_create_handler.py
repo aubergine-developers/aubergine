@@ -53,10 +53,11 @@ def test_creates_param_extractors(create_handler, extractor_factory):
         extractor_factory.build_param_extractor.assert_any_call(param_spec)
     assert len(handler.params_extractors) == len(OP_SPEC['parameters'])
 
-def test_skips_creating_param_extractor(create_handler, extractor_factory):
+def test_creates_no_param_extractor(create_handler, extractor_factory):
     """The create_handler function should not create param extractors when there are no params."""
     handler = create_handler('order/details', PARAMLESS_OP_SPEC)
     assert extractor_factory.build_param_extractor.call_count == 0
+    assert not handler.params_extractors
 
 def test_returns_handler_with_body(create_handler):
     """The create_handler should return corret handler for operation with request body."""

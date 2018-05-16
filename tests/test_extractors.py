@@ -32,9 +32,9 @@ def test_raises_missing_body(http_req):
     assert exc_info.value.location == Location.BODY
 
 def test_read_header(http_req):
-    effect= lambda key, required: {'param1': 'xyz', 'param2': 'uvw'}.get(key)
+    effect = lambda key, required: {'param1': 'xyz', 'param2': 'uvw'}.get(key)
     http_req.get_header.side_effect = effect
-    assert 'xyz' == read_header(http_req, 'param1')
+    assert read_header(http_req, 'param1') == 'xyz'
     http_req.get_header.assert_called_once_with('param1', required=True)
 
 def test_raises_missing_header(http_req):
@@ -45,7 +45,7 @@ def test_raises_missing_header(http_req):
     assert exc_info.value.name == 'id'
 
 def test_read_path(http_req):
-    assert 'foobar' == read_path(http_req, param_name='b', a='baz', b='foobar')
+    assert read_path(http_req, param_name='b', a='baz', b='foobar') == 'foobar'
 
 def test_raises_missing_path(http_req):
     with pytest.raises(MissingValueError) as exc_info:
@@ -84,7 +84,7 @@ def test_returns_loaded_value(http_req, schema, decoder, mocker):
     result = ext.extract(http_req)
     decoder.decode.assert_called_once_with(read_data.return_value)
     schema.load.assert_called_once_with({'content': decoder.decode.return_value})
-    assert result.present == True
+    assert result.present
     assert result.value == schema.load.return_value[0]['content']
 
 def test_uses_read_data(http_req, schema, decoder, mocker):

@@ -1,10 +1,8 @@
 """Extractors for various parts of the request."""
-import abc
 import collections
 from enum import Enum
 from functools import partial
 from falcon import HTTPBadRequest
-from aubergine.common import Loggable
 from aubergine.decoders import PlainDecoder, JSONDecoder
 
 
@@ -36,7 +34,7 @@ class ValidationError(ValueError):
         self.errors = validation_errors
 
 
-class Extractor:
+class Extractor: # pylint: disable=too-few-public-methods
 
     def __init__(self, schema, decoder, required, read_data):
         self.schema = schema
@@ -57,19 +55,19 @@ class Extractor:
             raise ValidationError(errors)
         return ExtractionResult(present=True, value=data['content'])
 
-def read_body(req, **_kwargs):
+def read_body(req, **_):
     result = req.bounded_stream.read()
     if not result:
         raise MissingValueError(Location.BODY)
     return result
 
-def read_header(req, param_name, **_kwargs):
+def read_header(req, param_name, **_):
     try:
         return req.get_header(param_name, required=True)
     except HTTPBadRequest:
         raise MissingValueError(Location.HEADER, param_name)
 
-def read_query(req, param_name, **_kwargs):
+def read_query(req, param_name, **_):
     try:
         return req.get_param(param_name, required=True)
     except HTTPBadRequest:

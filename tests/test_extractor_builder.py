@@ -3,8 +3,8 @@ import copy
 from nadia.api import SchemaBuilder
 import pytest
 from aubergine.decoders import PlainDecoder, JSONDecoder
-from aubergine.extractors import (ExtractorBuilder, read_header, read_query, read_body, read_path,
-                                  UnsupportedContentTypeError)
+from aubergine.extractors import (ExtractorBuilder, read_header, read_query,
+                                  read_body, read_path, UnsupportedContentTypeError)
 
 
 SIMPLE_PARAMETER_SKELETON = {'name': 'some_param', 'schema': {'type': 'string'}}
@@ -89,3 +89,8 @@ def test_extractor_types(schema_builder, simple_spec):
     builder = ExtractorBuilder(schema_builder)
     extractor = builder.build_param_extractor(simple_spec)
     assert extractor.read_data.func == EXPECTED_READERS[simple_spec['in']]
+
+def test_body_extractor_type(schema_builder, json_spec):
+    builder = ExtractorBuilder(schema_builder)
+    extractor = builder.build_body_extractor({'content': json_spec['content']})
+    assert extractor.read_data == read_body

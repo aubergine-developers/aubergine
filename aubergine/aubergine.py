@@ -1,6 +1,7 @@
+"""Definition of main class - aubergine's public API."""
 import importlib
 import logging
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 import falcon
 from nadia.api import SchemaBuilder
 import ymlref
@@ -11,7 +12,7 @@ from aubergine import utils
 class Aubergine:
 
 
-    def __init__(self, spec_dict, **kwargs):
+    def __init__(self, spec_dict):
         self.spec_dict = spec_dict
 
     def build_api(self, api_factory=falcon.API, **kwargs):
@@ -40,10 +41,10 @@ class Aubergine:
         return next(iter(base_paths))
 
     def _greet(self):
-        print(LOGO)
+        print(self.LOGO)
 
-
-LOGO = """ █████╗ ██╗   ██╗██████╗ ███████╗██████╗  ██████╗ ██╗███╗   ██╗███████╗
+    LOGO = """
+ █████╗ ██╗   ██╗██████╗ ███████╗██████╗  ██████╗ ██╗███╗   ██╗███████╗
 ██╔══██╗██║   ██║██╔══██╗██╔════╝██╔══██╗██╔════╝ ██║████╗  ██║██╔════╝
 ███████║██║   ██║██████╔╝█████╗  ██████╔╝██║  ███╗██║██╔██╗ ██║█████╗
 ██╔══██║██║   ██║██╔══██╗██╔══╝  ██╔══██╗██║   ██║██║██║╚██╗██║██╔══╝
