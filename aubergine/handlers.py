@@ -1,5 +1,6 @@
 """Request handlers."""
 import json
+import logging
 import falcon
 from aubergine.extractors import ValidationError, MissingValueError
 
@@ -30,10 +31,17 @@ class RequestHandler:
         :param kwargs: placeholder for possibly present path parameters.
         :returns: None
         """
+        logger = logging.getLogger('aubergine.request_handler')
+        logger.info('%s %s request received', req.method, req.path)
         op_kws = self.get_parameter_dict(req, **kwargs)
 
         if self.body_extractor is not None:
-            op_kws['body'] = self.body_extractor.extract(req).value
+            extraction_result = self.body_extractor.extract(req)
+            if extraction_result.present:
+                op_kws['body'] = extraction_result.value
+                logger.debug('%s %s: body present: %s', req.method, req.path, op_kws['body'])
+            else:
+                logger.debug('%s %s: body not present in the request.', req.method, req.path)
 
         resp.body = json.dumps(self.operation(**op_kws))
 
@@ -46,12 +54,17 @@ class RequestHandler:
         :returns: a mapping of parameter names into the extracted values.
         :rtype: dict
         """
+        logger = logging.getLogger('aubergine.request_handler')
         extracted = {}
         try:
             for name, extractor in self.params_extractors.items():
                 present, value = extractor.extract(req, **kwargs)
                 if present:
+                    logger.debug('%s %s: param %s: %s', req.method, req.path, name, value)
                     extracted[name] = value
+                else:
+                    logger.debug('%s %s: param "%s" not present in request.', req.method,
+                                 req.path, name)
             return extracted
         except ValidationError as exc:
             raise falcon.HTTPBadRequest(*exc.errors)
