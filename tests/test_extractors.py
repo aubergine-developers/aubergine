@@ -85,7 +85,7 @@ def test_returns_loaded_value(http_req, schema, decoder, mocker):
     decoder.decode.assert_called_once_with(read_data.return_value)
     schema.load.assert_called_once_with({'content': decoder.decode.return_value})
     assert result.present == True
-    assert result.value == schema.load.return_value[0]
+    assert result.value == schema.load.return_value[0]['content']
 
 def test_uses_read_data(http_req, schema, decoder, mocker):
     read_data = mocker.Mock()
