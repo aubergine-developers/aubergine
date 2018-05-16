@@ -55,7 +55,7 @@ class Extractor:
         data, errors = self.schema.load({'content': decoded})
         if errors:
             raise ValidationError(errors)
-        return ExtractionResult(present=False, value=data['content'])
+        return ExtractionResult(present=True, value=data['content'])
 
 def read_body(req, **_kwargs):
     result = req.bounded_stream.read()
