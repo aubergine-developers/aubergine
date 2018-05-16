@@ -16,12 +16,18 @@ class Aubergine:
         self.spec_dict = spec_dict
 
     def build_api(self, api_factory=falcon.API, **kwargs):
+        logger = logging.getLogger('aubergine')
         self._greet()
+        logger.info('Buidling app %s (version %s)',
+                    self.spec_dict['info']['title'] ,
+                    self.spec_dict['info']['version'])
         ex_factory = kwargs.get('ex_factory', ExtractorBuilder(SchemaBuilder.create()))
         import_module = kwargs.get('import_module', importlib.import_module)
         base_path = self._get_base_path()
+        logger.info('Using base path %s', base_path)
         api = api_factory()
         for path, path_spec in self.spec_dict['paths'].items():
+            logger.info('Creating handlers for path %s', path)
             handlers = {meth: utils.create_handler(path, op_spec, ex_factory, import_module)
                         for meth, op_spec in path_spec.items()}
             resource = utils.create_resource(handlers)
