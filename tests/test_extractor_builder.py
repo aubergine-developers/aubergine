@@ -58,9 +58,9 @@ def test_uses_json_decoder(schema_builder, json_spec):
     """ParameterBuilder should uses JSONDecoder for parameters with media application/json."""
     builder = ExtractorBuilder(schema_builder)
     extractor = builder.build_param_extractor(json_spec)
-    assert isinstance(extractor.decoder, JSONDecoder), 'Should use JSONDecoder but does not.'
+    assert isinstance(extractor.decoder, JSONDecoder)
     extractor = builder.build_body_extractor({'content': json_spec['content']})
-    assert isinstance(extractor.decoder, JSONDecoder), 'Should use JSONDecoder but does not.'
+    assert isinstance(extractor.decoder, JSONDecoder)
 
 @pytest.mark.parametrize('location', ['path', 'query', 'header'])
 def test_unsupported_content_type(schema_builder, location):
