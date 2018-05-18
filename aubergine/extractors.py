@@ -35,7 +35,18 @@ class ValidationError(ValueError):
 
 
 class Extractor: # pylint: disable=too-few-public-methods
+    """Class for extracting parameter (or body) value from the request.
 
+    :param schema: Schema for the parameter this extractor is for.
+    :type schema: :py:class:`marshmallow.Schema`
+    :param decoder: decoder for the raw data obtained from the request.
+    :type decoder: object implementing `decode` method.
+    :param required: whether corresponding parameter is required or not.
+    :type required: bool
+    :type read_data: callable for reading raw data from request. It should be possible
+     to call it as read_data(request, **kwargs), where request is of the type
+     :py:class:`falcon.Request`.
+    """
     def __init__(self, schema, decoder, required, read_data):
         self.schema = schema
         self.decoder = decoder
@@ -43,6 +54,19 @@ class Extractor: # pylint: disable=too-few-public-methods
         self.required = required
 
     def extract(self, req, **kwargs):
+        """Extract parameter from request and additional path arguments.
+
+        :param req: request to extract value from
+        :type req: :py:class:`falcon.Request`
+        :param kwargs: keyword arguments - path parameters as passed by `falcon`.
+        :returns: a tuple containing information wheather parameter was present
+         in the request and, if so, its value.
+        :rtype: :py:class:`ExtractionResult`
+        :raises MissingValueError: if parameter was missing from request and the parameter
+         is mandatory.
+        :raises ValidationError: if parameter was present in the request but failed to validate
+         against this extractor's schema.
+        """
         try:
             raw = self.read_data(req, **kwargs)
         except MissingValueError as err:
@@ -56,24 +80,43 @@ class Extractor: # pylint: disable=too-few-public-methods
         return ExtractionResult(present=True, value=data['content'])
 
 def read_body(req, **_):
+    """Read raw data from request body.
+
+    This function is designed to be passed as `read_data` to :py:class:`Extractor` initializer.
+    """
     result = req.bounded_stream.read()
     if not result:
         raise MissingValueError(Location.BODY)
     return result
 
 def read_header(req, param_name, **_):
+    """Read parameter's raw data from request header.
+
+    Partial of this function, with fixed `param_name` can be passed to :py:class:`Extractor`
+    initializer.
+    """
     try:
         return req.get_header(param_name, required=True)
     except HTTPBadRequest:
         raise MissingValueError(Location.HEADER, param_name)
 
 def read_query(req, param_name, **_):
+    """Read parameter's raw data from request query args.
+
+    Partial of this function, with fixed `param_name` can be passed to :py:class:`Extractor`
+    initializer.
+    """
     try:
         return req.get_param(param_name, required=True)
     except HTTPBadRequest:
         raise MissingValueError(Location.QUERY, param_name)
 
 def read_path(_req, param_name, **kwargs):
+    """Read parameter's raw data from path parameters.
+
+    Partial of this function, with fixed `param_name` can be passed to :py:class:`Extractor`
+    initializer.
+    """
     if param_name not in kwargs:
         raise MissingValueError(Location.PATH, param_name)
     return kwargs[param_name]

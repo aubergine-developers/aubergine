@@ -1,3 +1,4 @@
+"""Test cases for create_handler function."""
 import importlib
 from functools import partial
 from nadia.api import SchemaBuilder
@@ -67,6 +68,7 @@ def test_returns_handler_with_body(create_handler):
     assert handler.body_extractor is not None
 
 def test_loads_operation(create_handler, import_module):
+    """Create handler function should load operation using its import_module."""
     handler = create_handler('some/path', OP_SPEC)
     import_module.assert_called_once_with('my.module')
     assert handler.operation == import_module.return_value.operation

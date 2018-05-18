@@ -5,6 +5,18 @@ from aubergine.extractors import Extractor, ExtractionResult, MissingValueError,
 from aubergine.handlers import RequestHandler
 
 def fake_extractor(mocker, present, value):
+    """Fake Extractor object whose extract method returns constant results
+
+    :param mocker: a pytest-mocker fixture
+    :type mocker: fixture
+    :param present: flag equal to the desired value of ExtractionResult.present field
+    :type present: bool
+    :param value: desired value of ExtractoinResult.value field returned from
+     extract method
+    :type param: any
+    :returns: mock acting as Extractor
+    :rtype: mocker.Mock
+    """
     ext = mocker.Mock(spec=Extractor)
     ext.extract.return_value = ExtractionResult(present=present, value=value)
     return ext
