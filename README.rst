@@ -63,7 +63,7 @@ Creating an API in **aubergine** simple and requires only the following steps:
    app = Aubergine.from_file('hello_world.yml')
    api = app.build_api()
 
-   4. Your app is ready to go. You can run it with any WSGI server like so:
+4. Your app is ready to go. You can run it with any WSGI server like so:
 
 .. code:: bash
 
