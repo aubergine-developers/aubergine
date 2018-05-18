@@ -7,7 +7,7 @@ aubergine: create REST APIs using API-first approach.
 API-first approach.
 
 Creating an API in **aubergine** simple and requires only the following steps:
-1. Create your OpenAPI 3 specification file, with `operationId` set to the callable of your choice.
+1. Create your OpenAPI 3 specification file, with ``operationId`` set to the callable of your choice.
 
 .. code:: yaml
 
@@ -45,7 +45,7 @@ Creating an API in **aubergine** simple and requires only the following steps:
 	   message:
 	     type: string
 
-2. Implement operations that you declared in your specification. Place `hello_world` module with the following contents in an importable directory.
+2. Implement operations that you declared in your specification. Place `hello_world`` module with the following contents in an importable directory.
 
 .. code:: python
 
@@ -54,7 +54,7 @@ Creating an API in **aubergine** simple and requires only the following steps:
        return {'message': 'Hello {}!'.format(who)}
 
 
-3. Tell aubergine to run your app. Create a `hello_app.py` with the following contents:
+3. Tell aubergine to run your app. Create a ``hello_app.py`` with the following contents:
 
 .. code:: python
 
@@ -70,7 +70,7 @@ Creating an API in **aubergine** simple and requires only the following steps:
    gunicorn hello_app:api
 
 
-Test it by navigating to `http://localhost:8000/v1/rest/hello?who=World`
+Test it by navigating to ``http://localhost:8000/v1/rest/hello?who=World``
 
 .. |License: MIT| image:: https://imgedoc...shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
