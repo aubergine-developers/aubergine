@@ -72,5 +72,5 @@ Creating an API in **aubergine** simple and requires only the following steps:
 
 Test it by navigating to ``http://localhost:8000/v1/rest/hello?who=World``
 
-.. |License: MIT| image:: https://imgedoc...shields.io/badge/License-MIT-yellow.svg
+.. |License: MIT| image:: https://imgedoc.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
