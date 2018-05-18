@@ -50,7 +50,7 @@ Creating an API in **aubergine** simple and requires only the following steps:
 .. code:: python
 
    def hello(who):
-       """Handles v1/rest/hello
+       """Handles v1/rest/hello"""
        return {'message': 'Hello {}!'.format(who)}
 
 
